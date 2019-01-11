@@ -1,5 +1,7 @@
 <?php
 
+// TODO: Remove protection
+
 
 class HtpasswdEditor {
 	private $users = [];
@@ -692,6 +694,7 @@ $tree = getDirTree();
 							htaccess:   false,
 							htpasswd:   false
 						};
+						let searchQuery = '';
 
 						$(document).ready(() => {
 							$('#folder-up').click(function (event) {
@@ -700,6 +703,11 @@ $tree = getDirTree();
 								}
 
 								currFolder = currFolder.upperFolder;
+								showCurrFolder();
+							});
+
+							$('#search').on('input', function (event) {
+								searchQuery = event.target.value;
 								showCurrFolder();
 							});
 
@@ -891,6 +899,12 @@ $tree = getDirTree();
 							$('.folder').remove();
 
 							currFolder.subfolders.forEach(subfolder => {
+								if (searchQuery !== '') {
+									if (!subfolder.name.match(new RegExp('.*' + searchQuery.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&') + '.*', 'g'))) {
+										return;
+									}
+								}
+
 								let displayLock = subfolder.htpasswd ? 'inherit' : 'none';
 
 								$('#file-explorer').append(
