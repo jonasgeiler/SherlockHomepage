@@ -900,7 +900,7 @@ $tree = getDirTree();
 
 							currFolder.subfolders.forEach(subfolder => {
 								if (searchQuery !== '') {
-									if (!subfolder.name.match(new RegExp('.*' + searchQuery.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&') + '.*', 'g'))) {
+									if (!subfolder.name.match(new RegExp('.*' + searchQuery.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&') + '.*', 'gi'))) {
 										return;
 									}
 								}
