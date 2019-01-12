@@ -13,6 +13,37 @@ class HtpasswdEditor {
 		file_put_contents($folderPath . '.htpasswd', '');
 	}
 
+	public function removeFiles ($folderPath) {
+		// Check if there's other content in Htaccess
+		$file = fopen($folderPath . '.htaccess', 'r');
+
+		$foundOtherContent = false;
+		while (!feof($file)) {
+			$line = trim(fgets($file));
+
+			if ($line === '')
+				continue;
+
+			if (
+				stripos($line, 'AuthUserFile') === false &&
+				stripos($line, 'AuthType') === false &&
+				stripos($line, 'AuthName') === false &&
+				stripos($line, 'Require') === false
+			) {
+				$foundOtherContent = true;
+			}
+		}
+
+		fclose($file);
+
+		if (!$foundOtherContent) {
+			unlink($folderPath . '.htpasswd');
+			unlink($folderPath . '.htaccess');
+		}
+
+		return $foundOtherContent;
+	}
+
 	public function read ($filePath) {
 		if (!file_exists($filePath))
 			return false;
@@ -134,7 +165,9 @@ session_start();
 
 $page = 'login';
 
-$sherlockPassword = /*passwd*/'admin'/**/;
+$sherlockPassword = /*passwd*/
+	'admin'/**/
+;
 
 if (isset($_POST['password']) && $_POST['password'] === $sherlockPassword) {
 	$_SESSION['loggedIn'] = true;
@@ -227,6 +260,37 @@ Require valid-user';
 
 			if (!$success)
 				break;
+
+			$returnData = ['success' => true];
+			break;
+
+		case 'removeProtection':
+			if (!isset($_GET['path']) || $_GET['path'] == '')
+				break;
+
+			$editor = new HtpasswdEditor();
+			$needsManualRemove = $editor->removeFiles('.' . $_GET['path'] . '/');
+
+			$returnData = [
+				'success'          => true,
+				'htaccessManually' => $needsManualRemove,
+			];
+
+			if ($needsManualRemove) {
+				$returnData['htaccessContent'] = file_get_contents('.' . $_GET['path'] . '/.htaccess');
+			}
+
+			break;
+
+		case 'removeProtectionManually':
+			if (!isset($_GET['path']) || $_GET['path'] == '')
+				break;
+
+			if (!isset($_GET['htaccess']))
+				break;
+
+			unlink('.' . $_GET['path'] . '/.htpasswd');
+			file_put_contents('.' . $_GET['path'] . '/.htaccess', $_GET['htaccess']);
 
 			$returnData = ['success' => true];
 			break;
@@ -588,6 +652,55 @@ $tree = getDirTree();
 									Remove protection from this folder
 								</button>
 
+								<div class="modal" id="remove-protection-modal">
+									<div class="modal-background"></div>
+									<div class="modal-card">
+										<header class="modal-card-head">
+											<p class="modal-card-title">Remove Protection</p>
+											<button class="modal-close-btn delete" aria-label="close"></button>
+										</header>
+										<section class="modal-card-body">
+											<div class="box">
+												<p>
+													Some other content was found in the folder's .htaccess file!<br />
+													You have to edit the .htaccess file manually, in order to prevent mistakes.<br />
+													Remove the 4 lines that begin with:
+													<code>AuthUserFile</code>,
+													<code>AuthType</code>,
+													<code>AuthName</code> or&nbsp;
+													<code>Require</code>
+												</p>
+											</div>
+
+											<div class="field">
+												<div class="control">
+													<textarea
+															rows="8"
+															style="font-family: monospace; white-space: pre;"
+															id="remove-protection-htaccess"
+															class="textarea"
+															placeholder=".htaccess...">
+													</textarea>
+												</div>
+											</div>
+
+											<div class="field is-grouped is-grouped-right">
+												<div class="control">
+													<button class="modal-cancel-btn button">Cancel</button>
+												</div>
+												<div class="control">
+													<button class="button is-danger" id="remove-protection-submit">
+														<span class="icon is-small is-left">
+															<i class="fas fa-plus"></i>
+														</span>
+														<span>Remove Protection</span>
+													</button>
+												</div>
+											</div>
+										</section>
+									</div>
+								</div>
+
 								<div class="modal" id="add-user-modal">
 									<div class="modal-background"></div>
 									<div class="modal-card">
@@ -777,8 +890,56 @@ $tree = getDirTree();
 							});
 
 							$('#remove-protection').click(function (event) {
-								alert('Not yet implemented!');
-								$('#remove-protection-modal').addClass('is-active');
+								let confirmed = confirm('Are you sure you want to remove protection from "' + currFolder.path + '"?');
+
+								if (!confirmed) {
+									return;
+								}
+
+								$('#remove-protection').addClass('is-loading');
+
+								$.getJSON('SherlockHomepage.php', {
+									api:  'removeProtection',
+									path: currFolder.path
+								}).done(response => {
+									if (response.success) {
+										if (response.htaccessManually) {
+											$('#remove-protection-htaccess').val(response.htaccessContent);
+											$('#remove-protection-modal').addClass('is-active');
+											$('#remove-protection').removeClass('is-loading');
+										} else {
+											window.location.reload();
+										}
+									} else {
+										alert('An error occured while removing protection!');
+										$('#remove-protection').removeClass('is-loading');
+									}
+								}).fail(msg => {
+									console.error(msg);
+									alert('An error occured while removing protection!');
+									$('#remove-protection').removeClass('is-loading');
+								});
+							});
+
+							$('#remove-protection-submit').click(function (event) {
+								$('#remove-protection-submit').addClass('is-loading');
+
+								$.getJSON('SherlockHomepage.php', {
+									api:      'removeProtectionManually',
+									path:     currFolder.path,
+									htaccess: $('#remove-protection-htaccess').val()
+								}).done(response => {
+									if (response.success) {
+										window.location.reload();
+									} else {
+										alert('An error occured while removing protection!');
+										$('#remove-protection-submit').removeClass('is-loading');
+									}
+								}).fail(msg => {
+									console.error(msg);
+									alert('An error occured while removing protection!');
+									$('#remove-protection-submit').removeClass('is-loading');
+								});
 							});
 
 							$('#add-user').click(function (event) {
@@ -825,28 +986,30 @@ $tree = getDirTree();
 							$('#edit-user-remove').click(function (event) {
 								let username = $('#edit-user-currusername').text();
 
-								let confirmed = confirm('Are you sure you want to remove user "' + username + '"');
+								let confirmed = confirm('Are you sure you want to remove user "' + username + '"?');
 
-								if (confirmed) {
-									$('#edit-user-remove').addClass('is-loading');
-
-									$.getJSON('SherlockHomepage.php', {
-										api:      'removeHtpasswdUser',
-										path:     currFolder.path,
-										username: username
-									}).done(response => {
-										if (response.success) {
-											$('#edit-user-remove').removeClass('is-loading');
-											$('#edit-user-modal').removeClass('is-active');
-											updateUsersList();
-										} else {
-											alert('An error occured while removing .htpasswd user!');
-										}
-									}).fail(msg => {
-										console.error(msg);
-										alert('An error occured while removing .htpasswd user!');
-									});
+								if (!confirmed) {
+									return;
 								}
+
+								$('#edit-user-remove').addClass('is-loading');
+
+								$.getJSON('SherlockHomepage.php', {
+									api:      'removeHtpasswdUser',
+									path:     currFolder.path,
+									username: username
+								}).done(response => {
+									if (response.success) {
+										$('#edit-user-remove').removeClass('is-loading');
+										$('#edit-user-modal').removeClass('is-active');
+										updateUsersList();
+									} else {
+										alert('An error occured while removing .htpasswd user!');
+									}
+								}).fail(msg => {
+									console.error(msg);
+									alert('An error occured while removing .htpasswd user!');
+								});
 							});
 
 							$('#edit-user-submit').click(function (event) {
