@@ -810,7 +810,7 @@ $tree = getDirTree();
 						let searchQuery = '';
 
 						$(document).ready(() => {
-							$('#folder-up').click(function (event) {
+							$('#folder-up').click(function () {
 								if (currFolder.root) {
 									return;
 								}
@@ -824,79 +824,90 @@ $tree = getDirTree();
 								showCurrFolder();
 							});
 
-							$('#secureFolder-submit').click(function (event) {
-								if ($('#secureFolder-username').val() === '') {
-									$('#secureFolder-username').addClass('is-danger');
+							let secureFolder_submitButton = $('#secureFolder-submit');
+							let secureFolder_usernameField = $('#secureFolder-username');
+							let secureFolder_passwordField = $('#secureFolder-password');
+
+							secureFolder_submitButton.click(function () {
+								if (secureFolder_usernameField.val() === '') {
+									secureFolder_usernameField.addClass('is-danger');
 									return;
 								}
 
-								if ($('#secureFolder-password').val() === '') {
-									$('#secureFolder-password').addClass('is-danger');
+								if (secureFolder_passwordField.val() === '') {
+									secureFolder_passwordField.addClass('is-danger');
 									return;
 								}
 
-								$('#secureFolder-submit').addClass('is-loading');
+								secureFolder_submitButton.addClass('is-loading');
 
 								$.getJSON('SherlockHomepage.php', {
 									api:      'secureFolder',
 									path:     currFolder.path,
-									username: $('#secureFolder-username').val(),
-									password: $('#secureFolder-password').val()
+									username: secureFolder_usernameField.val(),
+									password: secureFolder_passwordField.val()
 								}).done(response => {
 									if (response.success) {
 										window.location.reload();
 									} else {
-										alert('An error occured while securing folder!');
-										$('#secureFolder-submit').removeClass('is-loading');
+										alert('An error occurred while securing folder!');
+										secureFolder_submitButton.removeClass('is-loading');
 									}
 								}).fail(msg => {
 									console.error(msg);
-									alert('An error occured while securing folder!');
-									$('#secureFolder-submit').removeClass('is-loading');
+									alert('An error occurred while securing folder!');
+									secureFolder_submitButton.removeClass('is-loading');
 								});
 							});
 
-							$('#secureFolderManually-submit').click(function (event) {
-								if ($('#secureFolderManually-username').val() === '') {
-									$('#secureFolderManually-username').addClass('is-danger');
+							let secureFolderManually_submitButton = $('#secureFolderManually-submit');
+							let secureFolderManually_usernameField = $('#secureFolderManually-username');
+							let secureFolderManually_passwordField = $('#secureFolderManually-password');
+							let secureFolderManually_htaccessField = $('#secureFolderManually-htaccess');
+
+							secureFolderManually_submitButton.click(function () {
+								if (secureFolderManually_usernameField.val() === '') {
+									secureFolderManually_usernameField.addClass('is-danger');
 									return;
 								}
 
-								if ($('#secureFolderManually-password').val() === '') {
-									$('#secureFolderManually-password').addClass('is-danger');
+								if (secureFolderManually_passwordField.val() === '') {
+									secureFolderManually_passwordField.addClass('is-danger');
 									return;
 								}
 
-								$('#secureFolderManually-submit').addClass('is-loading');
+								secureFolderManually_submitButton.addClass('is-loading');
 
 								$.getJSON('SherlockHomepage.php', {
 									api:      'secureFolderManually',
 									path:     currFolder.path,
-									username: $('#secureFolderManually-username').val(),
-									password: $('#secureFolderManually-password').val(),
-									htaccess: $('#secureFolderManually-htaccess').val()
+									username: secureFolderManually_usernameField.val(),
+									password: secureFolderManually_passwordField.val(),
+									htaccess: secureFolderManually_htaccessField.val()
 								}).done(response => {
 									if (response.success) {
 										window.location.reload();
 									} else {
-										alert('An error occured while securing folder!');
-										$('#secureFolderManually-submit').removeClass('is-loading');
+										alert('An error occurred while securing folder!');
+										secureFolderManually_submitButton.removeClass('is-loading');
 									}
 								}).fail(msg => {
 									console.error(msg);
-									alert('An error occured while securing folder!');
-									$('#secureFolderManually-submit').removeClass('is-loading');
+									alert('An error occurred while securing folder!');
+									secureFolderManually_submitButton.removeClass('is-loading');
 								});
 							});
 
-							$('#remove-protection').click(function (event) {
+							let removeProtectionButton = $('#remove-protection');
+
+							removeProtectionButton.click(function () {
 								let confirmed = confirm('Are you sure you want to remove protection from "' + currFolder.path + '"?');
 
 								if (!confirmed) {
 									return;
 								}
 
-								$('#remove-protection').addClass('is-loading');
+								removeProtectionButton.addClass('is-loading');
 
 								$.getJSON('SherlockHomepage.php', {
 									api:  'removeProtection',
@@ -904,25 +915,27 @@ $tree = getDirTree();
 								}).done(response => {
 									if (response.success) {
 										if (response.htaccessManually) {
+											removeProtectionButton.removeClass('is-loading');
 											$('#remove-protection-htaccess').val(response.htaccessContent);
 											$('#remove-protection-modal').addClass('is-active');
-											$('#remove-protection').removeClass('is-loading');
 										} else {
 											window.location.reload();
 										}
 									} else {
-										alert('An error occured while removing protection!');
-										$('#remove-protection').removeClass('is-loading');
+										alert('An error occurred while removing protection!');
+										removeProtectionButton.removeClass('is-loading');
 									}
 								}).fail(msg => {
 									console.error(msg);
-									alert('An error occured while removing protection!');
-									$('#remove-protection').removeClass('is-loading');
+									alert('An error occurred while removing protection!');
+									removeProtectionButton.removeClass('is-loading');
 								});
 							});
 
-							$('#remove-protection-submit').click(function (event) {
-								$('#remove-protection-submit').addClass('is-loading');
+							let removeProtection_submit = $('#remove-protection-submit');
+
+							removeProtection_submit.click(function () {
+								removeProtection_submit.addClass('is-loading');
 
 								$.getJSON('SherlockHomepage.php', {
 									api:      'removeProtectionManually',
@@ -932,59 +945,67 @@ $tree = getDirTree();
 									if (response.success) {
 										window.location.reload();
 									} else {
-										alert('An error occured while removing protection!');
-										$('#remove-protection-submit').removeClass('is-loading');
+										alert('An error occurred while removing protection!');
+										removeProtection_submit.removeClass('is-loading');
 									}
 								}).fail(msg => {
 									console.error(msg);
-									alert('An error occured while removing protection!');
-									$('#remove-protection-submit').removeClass('is-loading');
+									alert('An error occurred while removing protection!');
+									removeProtection_submit.removeClass('is-loading');
 								});
 							});
 
-							$('#add-user').click(function (event) {
+							$('#add-user').click(function () {
 								$('#add-user-modal').addClass('is-active');
 							});
 
-							$('#add-user-submit').click(function (event) {
-								if ($('#add-user-username').val() === '') {
-									$('#add-user-username').addClass('is-danger');
+							let addUser_submit = $('#add-user-submit');
+							let addUser_usernameField = $('#add-user-username');
+							let addUser_passwordField = $('#add-user-password');
+
+							addUser_submit.click(function () {
+								if (addUser_usernameField.val() === '') {
+									addUser_usernameField.addClass('is-danger');
 									return;
 								}
 
-								if ($('#add-user-password').val() === '') {
-									$('#add-user-password').addClass('is-danger');
+								if (addUser_passwordField.val() === '') {
+									addUser_passwordField.addClass('is-danger');
 									return;
 								}
 
-								$('#add-user-submit').addClass('is-loading');
+								addUser_submit.addClass('is-loading');
 
 								$.getJSON('SherlockHomepage.php', {
 									api:      'addHtpasswdUser',
 									path:     currFolder.path,
-									username: $('#add-user-username').val(),
-									password: $('#add-user-password').val()
+									username: addUser_usernameField.val(),
+									password: addUser_passwordField.val()
 								}).done(response => {
 									if (response.success) {
-										$('#add-user-submit').removeClass('is-loading');
+										addUser_submit.removeClass('is-loading');
 										$('#add-user-modal').removeClass('is-active');
 										updateUsersList();
 
-										$('#add-user-username').val('');
-										$('#add-user-password').val('');
+										addUser_usernameField.val('');
+										addUser_passwordField.val('');
 									} else {
-										alert('An error occured while adding .htpasswd user!');
-										$('#add-user-submit').removeClass('is-loading');
+										alert('An error occurred while adding .htpasswd user!');
+										addUser_submit.removeClass('is-loading');
 									}
 								}).fail(msg => {
 									console.error(msg);
-									alert('An error occured while adding .htpasswd user!');
-									$('#add-user-submit').removeClass('is-loading');
+									alert('An error occurred while adding .htpasswd user!');
+									addUser_submit.removeClass('is-loading');
 								});
 							});
 
-							$('#edit-user-remove').click(function (event) {
-								let username = $('#edit-user-currusername').text();
+							let editUser_removeButton = $('#edit-user-remove');
+							let editUser_currUsername = $('#edit-user-currusername');
+							let editUser_modal = $('#edit-user-modal');
+
+							editUser_removeButton.click(function () {
+								let username = editUser_currUsername.text();
 
 								let confirmed = confirm('Are you sure you want to remove user "' + username + '"?');
 
@@ -992,7 +1013,7 @@ $tree = getDirTree();
 									return;
 								}
 
-								$('#edit-user-remove').addClass('is-loading');
+								editUser_removeButton.addClass('is-loading');
 
 								$.getJSON('SherlockHomepage.php', {
 									api:      'removeHtpasswdUser',
@@ -1000,52 +1021,56 @@ $tree = getDirTree();
 									username: username
 								}).done(response => {
 									if (response.success) {
-										$('#edit-user-remove').removeClass('is-loading');
-										$('#edit-user-modal').removeClass('is-active');
+										editUser_removeButton.removeClass('is-loading');
+										editUser_modal.removeClass('is-active');
 										updateUsersList();
 									} else {
-										alert('An error occured while removing .htpasswd user!');
+										alert('An error occurred while removing .htpasswd user!');
 									}
 								}).fail(msg => {
 									console.error(msg);
-									alert('An error occured while removing .htpasswd user!');
+									alert('An error occurred while removing .htpasswd user!');
 								});
 							});
 
-							$('#edit-user-submit').click(function (event) {
-								if ($('#edit-user-username').val() === '') {
-									$('#edit-user-username').addClass('is-danger');
+							let editUser_submit = $('#edit-user-submit');
+							let editUser_usernameField = $('#edit-user-username');
+							let editUser_passwordField = $('#edit-user-password');
+
+							editUser_submit.click(function () {
+								if (editUser_usernameField.val() === '') {
+									editUser_usernameField.addClass('is-danger');
 									return;
 								}
 
-								$('#edit-user-submit').addClass('is-loading');
+								editUser_submit.addClass('is-loading');
 
 								$.getJSON('SherlockHomepage.php', {
 									api:          'editHtpasswdUser',
 									path:         currFolder.path,
-									username:     $('#edit-user-username').val(),
-									password:     $('#edit-user-password').val(),
-									old_username: $('#edit-user-currusername').text()
+									username:     editUser_usernameField.val(),
+									password:     editUser_passwordField.val(),
+									old_username: editUser_currUsername.text()
 								}).done(response => {
 									if (response.success) {
-										$('#edit-user-submit').removeClass('is-loading');
-										$('#edit-user-modal').removeClass('is-active');
+										editUser_submit.removeClass('is-loading');
+										editUser_modal.removeClass('is-active');
 										updateUsersList();
 
-										$('#edit-user-username').val('');
-										$('#edit-user-password').val('');
+										editUser_usernameField.val('');
+										editUser_passwordField.val('');
 									} else {
-										alert('An error occured while adding .htpasswd user!');
-										$('#edit-user-submit').removeClass('is-loading');
+										alert('An error occurred while adding .htpasswd user!');
+										editUser_submit.removeClass('is-loading');
 									}
 								}).fail(msg => {
 									console.error(msg);
-									alert('An error occured while adding .htpasswd user!');
-									$('#edit-user-submit').removeClass('is-loading');
+									alert('An error occurred while adding .htpasswd user!');
+									editUser_submit.removeClass('is-loading');
 								});
 							});
 
-							$('.modal-cancel-btn, .modal-close-btn, .modal-background').click(function (event) {
+							$('.modal-cancel-btn, .modal-close-btn, .modal-background').click(function () {
 								$('.modal').removeClass('is-active');
 							});
 
@@ -1079,14 +1104,12 @@ $tree = getDirTree();
 
 									${subfolder.name}
 
-									<span class="panel-icon" style="display: inherit; flex: 1; flex-direction: row-reverse; display: ${displayLock};">
+									<span class="panel-icon" style="flex: 1; flex-direction: row-reverse; display: ${displayLock};">
 										<i class="fas fa-lock" aria-hidden="true"></i>
 									</span>
 								</a>
 								`
 								);
-
-
 							});
 
 							$('.folder').click(function (event) {
@@ -1101,11 +1124,14 @@ $tree = getDirTree();
 
 							$('#current-folder').text(currFolder.path);
 
+							let secureFolderForm = $('#secureFolder');
+							let secureFolderManuallyForm = $('#secureFolderManually');
+							let editFolderForm = $('#editFolder');
 
 							if (!currFolder.htpasswd && !currFolder.htaccess) {
-								$('#secureFolder').show();
-								$('#secureFolderManually').hide();
-								$('#editFolder').hide();
+								secureFolderForm.show();
+								secureFolderManuallyForm.hide();
+								editFolderForm.hide();
 							} else if (!currFolder.htpasswd && currFolder.htaccess) {
 								$.getJSON('SherlockHomepage.php', {
 									api:  'getHtaccessContent',
@@ -1114,11 +1140,11 @@ $tree = getDirTree();
 									if (response.success) {
 										$('#secureFolderManually-htaccess').val(response.content);
 									} else {
-										alert('An error occured while fetching .htaccess content!');
+										alert('An error occurred while fetching .htaccess content!');
 									}
 								}).fail(msg => {
 									console.error(msg);
-									alert('An error occured while fetching .htaccess content!');
+									alert('An error occurred while fetching .htaccess content!');
 								});
 
 								$.getJSON('SherlockHomepage.php', {
@@ -1128,23 +1154,23 @@ $tree = getDirTree();
 									if (response.success) {
 										$('#authUserFile').text('AuthUserFile ' + response.path);
 									} else {
-										alert('An error occured while fetching auth user file path!');
+										alert('An error occurred while fetching auth user file path!');
 									}
 								}).fail(msg => {
 									console.error(msg);
-									alert('An error occured while fetching auth user file path!');
+									alert('An error occurred while fetching auth user file path!');
 								});
 
 
-								$('#secureFolder').hide();
-								$('#secureFolderManually').show();
-								$('#editFolder').hide();
+								secureFolderForm.hide();
+								secureFolderManuallyForm.show();
+								editFolderForm.hide();
 							} else if (currFolder.htpasswd && currFolder.htaccess) {
 								updateUsersList();
 
-								$('#secureFolder').hide();
-								$('#secureFolderManually').hide();
-								$('#editFolder').show();
+								secureFolderForm.hide();
+								secureFolderManuallyForm.hide();
+								editFolderForm.show();
 							}
 						}
 
@@ -1154,10 +1180,12 @@ $tree = getDirTree();
 								path: currFolder.path
 							}).done(response => {
 								if (response.success) {
-									$('#htpasswd-users').empty();
+									let htpasswdUsers = $('#htpasswd-users');
+
+									htpasswdUsers.empty();
 
 									response.users.forEach(username => {
-										$('#htpasswd-users').append(
+										htpasswdUsers.append(
 											`
 											<tr>
 												<td>${username}</td>
@@ -1183,11 +1211,11 @@ $tree = getDirTree();
 										$('#edit-user-modal').addClass('is-active');
 									});
 								} else {
-									alert('An error occured while fetching .htaccess content!');
+									alert('An error occurred while fetching .htaccess content!');
 								}
 							}).fail(msg => {
 								console.error(msg);
-								alert('An error occured while fetching .htaccess content!');
+								alert('An error occurred while fetching .htaccess content!');
 							});
 						}
 					</script>
