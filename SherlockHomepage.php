@@ -689,7 +689,7 @@ $tree = getDirTree();
 												<div class="control">
 													<button class="button is-danger" id="remove-protection-submit">
 														<span class="icon is-small is-left">
-															<i class="fas fa-plus"></i>
+															<i class="fas fa-trash"></i>
 														</span>
 														<span>Remove Protection</span>
 													</button>
