@@ -165,9 +165,7 @@ session_start();
 
 $page = 'login';
 
-$sherlockPassword = /*passwd*/
-	'admin'/**/
-;
+$sherlockPassword = /*passwd*/'admin'/**/;
 
 if (isset($_POST['password']) && $_POST['password'] === $sherlockPassword) {
 	$_SESSION['loggedIn'] = true;
