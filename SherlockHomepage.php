@@ -434,7 +434,9 @@ function getDirTree ($path = '.') {
 	return $tree;
 }
 
-$tree = getDirTree();
+
+if ($page == 'home')
+	$tree = getDirTree();
 
 ?>
 
